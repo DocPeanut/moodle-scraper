@@ -56,9 +56,9 @@ console.log(`Starting ${commands.length} downloads simultaneously...`);
 console.log(`======================================================\n`);
 
 concurrently(commands, {
-  maxProcesses: 5,
+  maxProcesses: 10,
   prefix: "name",
-  prefixColors: ["magenta", "cyan", "blue", "yellow", "green", "red"],
+  prefixColors: "auto",
 })
   .result.then(() => {
     console.log("\n======================================================");
