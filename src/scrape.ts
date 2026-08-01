@@ -4,6 +4,7 @@ import { chromium } from "playwright";
 interface ScrapeResult {
   url: string;
   title: string;
+  section?: string;
   iframes: string[];
 }
 
@@ -27,7 +28,9 @@ async function run() {
 
   if (!startUrl) {
     console.error("Usage: pnpm run scrape <moodle_page_url>");
-    console.error('Example: pnpm run scrape "https://moodle.example.com/mod/page/view.php?id=12345"');
+    console.error(
+      'Example: pnpm run scrape "https://moodle.example.com/mod/page/view.php?id=12345"',
+    );
     process.exit(1);
   }
 
@@ -59,6 +62,7 @@ async function run() {
     await page.waitForLoadState("domcontentloaded");
 
     let title = await page.title();
+    let section: string | undefined;
 
     // Try to extract title from h2 under #region-main
     const h2Locator = page.locator("#region-main h2").first();
@@ -72,6 +76,17 @@ async function run() {
       } catch {}
     }
 
+    const sectionLocator = page.locator("#page-navbar > nav > ol > li:nth-child(2) > a").first();
+    const countSection = await sectionLocator.count();
+    if (countSection > 0) {
+      try {
+        const sectionText = await sectionLocator.innerText({ timeout: 1000 });
+        if (sectionText && sectionText.trim() !== "") {
+          section = sectionText.trim();
+        }
+      } catch {}
+    }
+
     const iframes = await page.$$eval("iframe", (frames) => {
       return frames.map((f) => (f as HTMLIFrameElement).src);
     });
@@ -79,10 +94,14 @@ async function run() {
     results.push({
       url: currentUrl,
       title,
+      section,
       iframes,
     });
 
     console.log(` -> Title: ${title}`);
+    if (section) {
+      console.log(` -> Section: ${section}`);
+    }
     console.log(` -> Found ${iframes.length} iframes`);
     iframes.forEach((src) => console.log(`    - ${src}`));
 

@@ -23,6 +23,10 @@ if (!fs.existsSync(targetDir)) {
 
 console.log(`Saving videos to: ${targetDir}`);
 
+function sanitizeName(value: string) {
+  return value.replace(/[/\\?%*:|"<>]/g, "-").trim();
+}
+
 const dataPath = path.join(__dirname, "../output.jsonc");
 if (!fs.existsSync(dataPath)) {
   console.error("output.json not found! Please run the scraper first.");
@@ -36,15 +40,22 @@ const commands: { command: string; name: string }[] = [];
 for (const item of data) {
   if (!item.iframes || item.iframes.length === 0) continue;
 
+  const sectionName = item.section ? sanitizeName(item.section) : "Unsorted";
+  const sectionDir = path.join(targetDir, sectionName);
+
+  if (!fs.existsSync(sectionDir)) {
+    fs.mkdirSync(sectionDir, { recursive: true });
+  }
+
   for (let i = 0; i < item.iframes.length; i++) {
     const vimeoUrl = item.iframes[i];
 
-    const baseName = item.title;
+    const baseName = sanitizeName(item.title);
     const titleSuffix = item.iframes.length > 1 ? `_part${i + 1}` : "";
-    let safeTitle = `${baseName}${titleSuffix}`.replace(/[/\\?%*:|"<>]/g, "-");
+    let safeTitle = `${baseName}${titleSuffix}`;
 
     const referer = item.url;
-    const outputTemplate = path.join(targetDir, `${safeTitle}.%(ext)s`);
+    const outputTemplate = path.join(sectionDir, `${safeTitle}.%(ext)s`);
 
     const cmd = `yt-dlp -o "${outputTemplate}" --referer "${referer}" "${vimeoUrl}"`;
     commands.push({ command: cmd, name: safeTitle });
