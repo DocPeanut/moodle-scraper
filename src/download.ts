@@ -5,8 +5,8 @@ import * as path from "path";
 const args = process.argv.slice(2);
 
 if (args.length === 0) {
-  console.error("Usage: pnpm download <target_directory>");
-  console.error('Example: pnpm download "~/Desktop/Vimeo Downloads"');
+  console.error("Usage: pnpm run download <target_directory>");
+  console.error('Example: pnpm run download "~/Desktop/Vimeo Downloads"');
   process.exit(1);
 }
 
@@ -65,6 +65,7 @@ concurrently(commands, {
     console.log("All downloads successfully processed!");
     console.log("======================================================");
   })
-  .catch(() => {
+  .catch((e) => {
     console.error("\n[!] Finished fetching queue, but some downloads might have failed.");
+    console.error(e);
   });

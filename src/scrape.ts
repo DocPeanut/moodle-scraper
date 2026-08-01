@@ -26,8 +26,8 @@ async function run() {
   const startUrl = process.argv.slice(2)[0];
 
   if (!startUrl) {
-    console.error("Usage: pnpm scrape <moodle_page_url>");
-    console.error("Example: pnpm scrape https://moodle.example.com/mod/page/view.php?id=12345");
+    console.error("Usage: pnpm run scrape <moodle_page_url>");
+    console.error('Example: pnpm run scrape "https://moodle.example.com/mod/page/view.php?id=12345"');
     process.exit(1);
   }
 
